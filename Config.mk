@@ -26,7 +26,7 @@ BIN := Omnium
 # =======
 # CPPFLAGS        := # Precompiler Flags
 # ASFLAGS         := # Assembly Flags
-# CFLAGS          := # C Flags
+CFLAGS          := -ansi -Wall -pedantic -O2
 # CXXFLAGS        := # C++ Flags
 # LDFLAGS         := # Linker flags
 
