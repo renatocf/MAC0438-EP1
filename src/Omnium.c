@@ -5,7 +5,6 @@
 
 /* Thread libraries */
 #include <pthread.h>
-#define NUM_THREADS 5
 
 void *perform_work(void *argument)
 {
@@ -23,8 +22,8 @@ int main(int argc, char **argv)
     int distance, n_cyclists, uniforme;
 
     /* threads */
-    pthread_t threads[NUM_THREADS];
-    int thread_args[NUM_THREADS];
+    pthread_t *threads;
+    int *thread_args;
     int result_code, index;
 
     if (argc != 4) {
@@ -50,8 +49,11 @@ int main(int argc, char **argv)
 
     printf("d:%d n:%d uniforme:%d\n", distance, n_cyclists, uniforme);
 
+    threads = (pthread_t *) malloc(n_cyclists * sizeof(*threads));
+    thread_args = (int *) malloc(n_cyclists * sizeof(*thread_args));
+
     /* create all threads one by one */
-    for (index = 0; index < NUM_THREADS; index++) {
+    for (index = 0; index < n_cyclists; index++) {
         thread_args[index] = index;
         printf("In main: creating thread %d\n", index);
         result_code = pthread_create(
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
     }
 
     /* wait for each thread to complete */
-    for (index = 0; index < NUM_THREADS; index++) {
+    for (index = 0; index < n_cyclists; index++) {
         /* block until thread 'index' completes */
         result_code = pthread_join(threads[index], NULL);
         printf("In main: thread %d has completed\n", index);
@@ -69,6 +71,9 @@ int main(int argc, char **argv)
     }
 
     printf("In main: All threads completed successfully\n");
+
+    free(threads);
+    free(thread_args);
 
     return EXIT_SUCCESS;
 }
