@@ -20,7 +20,7 @@ void *perform_work(void *argument)
 
 int main(int argc, char **argv)
 {
-    int distance, n_ciclists, uniforme;
+    int distance, n_cyclists, uniforme;
 
     /* threads */
     pthread_t threads[NUM_THREADS];
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     }
 
     distance   = atoi(argv[1]);
-    n_ciclists = atoi(argv[2]);
+    n_cyclists = atoi(argv[2]);
 
     if (argv[3][1] != '\0') {
         fprintf(stderr, "3rd argument must be 'u' or 'v'\n");
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
     }
 
-    printf("d:%d n:%d uniforme:%d\n", distance, n_ciclists, uniforme);
+    printf("d:%d n:%d uniforme:%d\n", distance, n_cyclists, uniforme);
 
     /* create all threads one by one */
     for (index = 0; index < NUM_THREADS; index++) {
