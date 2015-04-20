@@ -14,4 +14,6 @@ typedef pthread_t *pthread_array_t;
 pthread_array_t pthread_array_create(
     int n, pthread_action_t action, pthread_arg_t args);
 
+void pthread_array_join(int n, pthread_array_t threads);
+
 #endif

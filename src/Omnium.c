@@ -19,27 +19,25 @@ int sort_initial_position() {
 
 void *perform_work(void *argument) {
 
-  int position = sort_initial_position();
+  /* while (TRUE) { */
+    int position = sort_initial_position();
 
-  printf("Hello World! It's me, thread with initial position %d!\n",
-      position);
+    printf("Hello World! It's me, thread with initial position %d!\n",
+        position);
+  /* } */
 
   return NULL;
 }
 
 void simulate_race() {
-    /* threads */
-    int result_code, index;
-    pthread_array_t threads = pthread_array_create(n_cyclists, perform_work, NULL);
+
+    pthread_array_t threads;
 
     printf("d:%d n:%d uniforme:%d\n", distance, n_cyclists, uniforme);
 
-    /* wait for each thread to complete */
-    for (index = 0; index < n_cyclists; index++) {
-        result_code = pthread_join(threads[index], NULL);
-        printf("In main: thread %d has completed\n", index);
-        assert(result_code == 0);
-    }
+    threads = pthread_array_create(n_cyclists, perform_work, NULL);
+
+    pthread_array_join(n_cyclists, threads);
 
     printf("In main: All threads completed successfully\n");
 }

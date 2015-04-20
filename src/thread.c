@@ -8,8 +8,8 @@
 pthread_array_t pthread_array_create(
     int n, pthread_action_t action, pthread_arg_t args) {
 
+  int i = 0, result_code = -1;
   pthread_t *threads = malloc(n * sizeof(*threads));
-  int i = 0, result_code;
 
   for (i = 0; i < n; i++) {
     result_code = pthread_create(
@@ -18,4 +18,14 @@ pthread_array_t pthread_array_create(
   }
 
   return threads;
+}
+
+void pthread_array_join(int n, pthread_array_t threads) {
+
+  int i = 0, result_code = -1;
+
+  for (i = 0; i < n; i++) {
+    result_code = pthread_join(threads[i], NULL);
+    assert(result_code == 0);
+  }
 }
