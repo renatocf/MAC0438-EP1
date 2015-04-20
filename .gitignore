@@ -12,6 +12,7 @@ lib
 
 # Objects, Libraries and Binaries
 #==================================
+*.sw*
 *.mo
 *.o
 *.a
