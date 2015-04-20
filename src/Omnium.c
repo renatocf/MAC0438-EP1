@@ -29,16 +29,13 @@ void *perform_work(void *argument) {
 
 void simulate_race() {
     /* threads */
-    pthread_array_t threads;
     int result_code, index;
+    pthread_array_t threads = pthread_array_create(n_cyclists, perform_work, NULL);
 
     printf("d:%d n:%d uniforme:%d\n", distance, n_cyclists, uniforme);
 
-    threads = pthread_array_create(n_cyclists, perform_work, NULL);
-
     /* wait for each thread to complete */
     for (index = 0; index < n_cyclists; index++) {
-        /* block until thread 'index' completes */
         result_code = pthread_join(threads[index], NULL);
         printf("In main: thread %d has completed\n", index);
         assert(result_code == 0);
