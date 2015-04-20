@@ -19,11 +19,8 @@ int sort_initial_position() {
 }
 
 void *perform_work(void *argument) {
-  /* int lap = 0; */
-  int position = sort_initial_position();
 
-  /* int passed_in_value; */
-  /* passed_in_value = *((int *) argument); */
+  int position = sort_initial_position();
 
   printf("Hello World! It's me, thread with initial position %d!\n",
       position);
@@ -31,28 +28,34 @@ void *perform_work(void *argument) {
   return NULL;
 }
 
+typedef void *(pthread_action_t)(void *);
+typedef void *pthread_arg_t;
+
+typedef pthread_t *pthread_array_t;
+
+pthread_array_t pthread_array_create(
+    int n, pthread_action_t action, pthread_arg_t args) {
+
+  pthread_t *threads = malloc(n * sizeof(*threads));
+  int i = 0, result_code;
+
+  for (i = 0; i < n; i++) {
+    result_code = pthread_create(
+      &threads[i], NULL, action, (void *) args);
+    assert(result_code == 0);
+  }
+
+  return threads;
+}
+
 void simulate_race() {
     /* threads */
-    pthread_t *threads;
-    int *thread_args;
-
+    pthread_array_t threads;
     int result_code, index;
 
     printf("d:%d n:%d uniforme:%d\n", distance, n_cyclists, uniforme);
 
-    /* Initialize threads */
-    threads = (pthread_t *) malloc(n_cyclists * sizeof(*threads));
-    thread_args = (int *) malloc(n_cyclists * sizeof(*thread_args));
-
-    /* create all threads one by one */
-    for (index = 0; index < n_cyclists; index++) {
-        thread_args[index] = index;
-        printf("In main: creating thread %d\n", index);
-        result_code = pthread_create(
-            &threads[index], NULL, perform_work,
-            (void *) &thread_args[index]);
-        assert(result_code == 0);
-    }
+    threads = pthread_array_create(n_cyclists, perform_work, NULL);
 
     /* wait for each thread to complete */
     for (index = 0; index < n_cyclists; index++) {
@@ -61,9 +64,6 @@ void simulate_race() {
         printf("In main: thread %d has completed\n", index);
         assert(result_code == 0);
     }
-
-    free(threads);
-    free(thread_args);
 
     printf("In main: All threads completed successfully\n");
 }
