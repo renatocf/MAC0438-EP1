@@ -60,6 +60,7 @@ void speedway_destroy(speedway_t speedway) {
     sem_post(sem_array_get(speedway->mutexes, i));
   }
   free(speedway->positions);
+  sem_array_destroy(speedway->mutexes);
   free(speedway);
 }
 
