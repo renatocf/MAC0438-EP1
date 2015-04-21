@@ -37,6 +37,9 @@ sem_array_t sem_array_create(
 }
 
 void sem_array_destroy(sem_array_t sem_array) {
+  /* Pre-conditions */
+  assert(sem_array != NULL);
+
   free(sem_array->sems);
   free(sem_array);
 }

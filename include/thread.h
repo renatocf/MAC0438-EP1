@@ -20,7 +20,7 @@ typedef struct _sem_array_t *sem_array_t;
 sem_array_t sem_array_create(
   unsigned int n, int pshared, unsigned int value);
 
-void sem_array_destroy(sem_array_t sems);
+void sem_array_destroy(sem_array_t sem_array);
 
 /*---------------------------------------------------------------------------*/
 /*                             THREAD ARRAY                                  */
