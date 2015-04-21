@@ -110,10 +110,11 @@ int speedway_move_cyclist(speedway_t speedway,
   result_code = speedway_insert_cyclist_impl(speedway, cyclist, new_pos);
   if (result_code != -1)
     result_code = speedway_remove_cyclist_impl(speedway, cyclist, old_pos);
+  assert(result_code != -1);
 
   sem_wait(sem_array_get(speedway->mutexes, new_pos));
   sem_post(sem_array_get(speedway->mutexes, old_pos));
-  return result_code;
+  return (result_code != -1) ? new_pos : -1;
 }
 
 /*---------------------------------------------------------------------------*/
