@@ -178,6 +178,8 @@ void simulate_race() {
 
 int main(int argc, char **argv) {
 
+  time_t now;
+
   /* Read arguments */
   if (argc != 4) {
       fprintf(stderr, "USAGE: %s d n [v|u]\n", argv[0]);
@@ -200,7 +202,8 @@ int main(int argc, char **argv) {
           return EXIT_FAILURE;
   }
 
-  srand(time(NULL));
+  time(&now);
+  srand(now);
 
   if (g_num_cyclists <= MIN_CYCLISTS) {
       fprintf(stderr, "d (distance) must be > %d\n", MIN_CYCLISTS);
@@ -215,6 +218,8 @@ int main(int argc, char **argv) {
   printf("d:%d n:%d uniform:%d\n", g_distance, g_num_cyclists, g_uniform);
 
   simulate_race();
+
+  printf(YELLOW "Using seed: %ld" RES "\n", (long) now);
 
   return EXIT_SUCCESS;
 }
