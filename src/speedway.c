@@ -127,6 +127,7 @@ static int speedway_insert_cyclist_impl(speedway_t speedway,
 
   /* Pre-conditions */
   assert(speedway != NULL);
+  assert(pos < speedway->distance);
 
   for (i = 0; i < speedway->max_cyclists; i++) {
     if (speedway->positions[pos][i] == -1) {
@@ -144,6 +145,7 @@ static int speedway_remove_cyclist_impl(speedway_t speedway,
 
   /* Pre-conditions */
   assert(speedway != NULL);
+  assert(pos < speedway->distance);
 
   for (i = 0; i < speedway->max_cyclists; i++) {
     if (speedway->positions[pos][i] == cyclist)
