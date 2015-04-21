@@ -12,6 +12,7 @@
 #include "speedway.h"
 
 /* Constraints */
+#define MAX_TURNS    5 /* TODO: remove constraint */
 #define MIN_CYCLISTS 3
 #define MIN_DISTANCE 249
 #define CYCLISTS_PER_POSITION 4
@@ -106,7 +107,7 @@ void *perform_work(void *argument) {
     pthread_barrier_wait(&barrier);
 
     /* Exit conditions */
-    if (g_turn == 5) break;
+    if (g_turn == MAX_TURNS) break;
 
     /* Cyclist processment */
     printf("thread[%d]: old position = %d!\n", id, position);
@@ -148,7 +149,7 @@ void simulate_race() {
     pthread_barrier_wait(&barrier);
 
     /* Exit conditions */
-    if (g_turn == 5) {
+    if (g_turn == MAX_TURNS) {
       printf(YELLOW "race control:" BLUE " end race!" RES "\n");
       break;
     }
