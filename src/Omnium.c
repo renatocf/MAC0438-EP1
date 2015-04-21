@@ -44,6 +44,8 @@ unsigned int g_turn = 0;
 
 int **g_speedway;
 
+sem_array_t g_speedway_mutexes;
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 -------------------------------------------------------------------------------
@@ -185,13 +187,16 @@ void simulate_race() {
   pthread_array_t threads;
 
   /** Initialize **************************************************************/
+
+  /* Speedway */
   g_speedway = speedway_create(g_distance, CYCLISTS_PER_POSITION);
+  g_speedway_mutexes = sem_array_create(g_distance, 0, TRUE);
 
   /* Threads and barriers */
   threads  = pthread_array_create(g_num_cyclists, perform_work, NULL);
-  pthread_barrier_init (&barrier, NULL, g_num_cyclists + 1);
 
   /** Process *****************************************************************/
+  pthread_barrier_init (&barrier, NULL, g_num_cyclists + 1);
 
   /* Start run! */
   printf(YELLOW "race control:" BLUE " starting race!" RES "\n");
@@ -216,8 +221,13 @@ void simulate_race() {
   pthread_array_join(g_num_cyclists, threads);
 
   /** End *********************************************************************/
-  speedway_destroy(g_speedway);
+
+  /* Threads and barriers */
   pthread_array_destroy(threads);
+
+  /* Speedway */
+  sem_array_destroy(g_speedway_mutexes);
+  speedway_destroy(g_speedway);
 
   printf("In main: All threads completed successfully\n");
 }

@@ -5,19 +5,52 @@
 /* Libraries */
 #include "thread.h"
 
-static int *ns; /* TODO: delete debug array */
+/*
+////////////////////////////////////////////////////////////////////////////////
+-------------------------------------------------------------------------------
+                              SEMAPHORE ARRAY
+-------------------------------------------------------------------------------
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
+
+sem_array_t sem_array_create(int n, int pshared, unsigned int value) {
+  int i = 0, result_code = -1;
+  sem_t *sems = malloc(n * sizeof(*sems));
+
+  for (i = 0; i < n; i++) {
+    result_code = sem_init(&sems[i], pshared, value);
+    assert(result_code == 0);
+  }
+  return sems;
+}
+
+void sem_array_destroy(sem_array_t sems) {
+  free(sems);
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+-------------------------------------------------------------------------------
+                               THREAD ARRAY
+-------------------------------------------------------------------------------
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
+
+static int *pthread_array_n; /* TODO: delete debug array */
 
 pthread_array_t pthread_array_create(
     int n, pthread_action_t action, pthread_arg_t args) {
   int i = 0, result_code = -1;
   pthread_t *threads = malloc(n * sizeof(*threads));
 
-  ns = malloc(n * sizeof(*ns)); /* TODO: delete debug array */
+ /* TODO: delete debug array */
+  pthread_array_n = malloc(n * sizeof(*pthread_array_n));
 
   for (i = 0; i < n; i++) {
-    ns[i] = i;
+    pthread_array_n[i] = i;
     result_code = pthread_create(
-      &threads[i], NULL, action, (void *) &ns[i]); /* TODO: delete resource */
+      /* TODO: delete resource */
+      &threads[i], NULL, action, (void *) &pthread_array_n[i]);
     assert(result_code == 0);
   }
 
@@ -25,7 +58,7 @@ pthread_array_t pthread_array_create(
 }
 
 void pthread_array_destroy(pthread_array_t threads) {
-  free(ns);
+  free(pthread_array_n);
   free(threads);
 }
 
