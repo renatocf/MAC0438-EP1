@@ -99,6 +99,23 @@ int speedway_remove_cyclist(speedway_t speedway,
   return result_code;
 }
 
+int speedway_move_cyclist(speedway_t speedway,
+                          unsigned int cyclist,
+                          unsigned int old_pos,
+                          unsigned int new_pos) {
+  int result_code = -1;
+  sem_wait(sem_array_get(speedway->mutexes, old_pos));
+  sem_wait(sem_array_get(speedway->mutexes, new_pos));
+
+  result_code = speedway_insert_cyclist_impl(speedway, cyclist, new_pos);
+  if (result_code != -1)
+    result_code = speedway_remove_cyclist_impl(speedway, cyclist, old_pos);
+
+  sem_wait(sem_array_get(speedway->mutexes, new_pos));
+  sem_post(sem_array_get(speedway->mutexes, old_pos));
+  return result_code;
+}
+
 /*---------------------------------------------------------------------------*/
 /*                            PRIVATE FUNCTIONS                              */
 /*---------------------------------------------------------------------------*/
