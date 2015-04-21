@@ -26,4 +26,8 @@ int speedway_move_cyclist(speedway_t speedway,
                           unsigned int old_pos,
                           unsigned int new_pos);
 
+int speedway_advance_cyclist(speedway_t speedway,
+                             unsigned int cyclist,
+                             unsigned int pos);
+
 #endif

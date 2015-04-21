@@ -117,6 +117,13 @@ int speedway_move_cyclist(speedway_t speedway,
   return (result_code != -1) ? new_pos : -1;
 }
 
+int speedway_advance_cyclist(speedway_t speedway,
+                             unsigned int cyclist,
+                             unsigned int pos) {
+  return speedway_move_cyclist(
+    speedway, cyclist, pos, (pos+1) % speedway->distance);
+}
+
 /*---------------------------------------------------------------------------*/
 /*                            PRIVATE FUNCTIONS                              */
 /*---------------------------------------------------------------------------*/
