@@ -72,7 +72,7 @@ pthread_array_t pthread_array_create(
   unsigned int i = 0;
   int result_code = -1;
   pthread_array_t pthread_array = NULL;
- 
+
   pthread_array          = malloc(sizeof(*pthread_array));
   pthread_array->threads = malloc(n * sizeof(*(pthread_array->threads)));
   pthread_array->ids     = malloc(n * sizeof(*(pthread_array->ids)));

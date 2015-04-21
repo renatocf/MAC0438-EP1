@@ -64,36 +64,36 @@ void speedway_destroy(speedway_t speedway) {
   free(speedway);
 }
 
-int speedway_insert_cyclist(speedway_t speedway, int cyclist, int place) {
+int speedway_insert_cyclist(speedway_t speedway, int cyclist, int pos) {
   int i = 0;
 
   /* Pre-conditions */
   assert(speedway != NULL);
 
-  sem_wait(sem_array_get(speedway->mutexes, place));
+  sem_wait(sem_array_get(speedway->mutexes, pos));
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
-    if (speedway->positions[place][i] == -1) {
-      speedway->positions[place][i] = cyclist;
-      sem_post(sem_array_get(speedway->mutexes, place));
+    if (speedway->positions[pos][i] == -1) {
+      speedway->positions[pos][i] = cyclist;
+      sem_post(sem_array_get(speedway->mutexes, pos));
       return i;
     }
   }
-  sem_post(sem_array_get(speedway->mutexes, place));
+  sem_post(sem_array_get(speedway->mutexes, pos));
   return -1;
 }
 
-int speedway_remove_cyclist(speedway_t speedway, int cyclist, int place) {
+int speedway_remove_cyclist(speedway_t speedway, int cyclist, int pos) {
   int i = 0;
 
   /* Pre-conditions */
   assert(speedway != NULL);
 
-  sem_wait(sem_array_get(speedway->mutexes, place));
+  sem_wait(sem_array_get(speedway->mutexes, pos));
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
-    if (speedway->positions[place][i] == cyclist)
-      sem_post(sem_array_get(speedway->mutexes, place));
+    if (speedway->positions[pos][i] == cyclist)
+      sem_post(sem_array_get(speedway->mutexes, pos));
       return i;
   }
-  sem_post(sem_array_get(speedway->mutexes, place));
+  sem_post(sem_array_get(speedway->mutexes, pos));
   return -1;
 }
