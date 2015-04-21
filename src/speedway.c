@@ -4,6 +4,7 @@
 
 /* Libraries */
 #include "speedway.h"
+#include "thread.h"
 
 /*
 ////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +16,7 @@
 
 struct _speedway_t {
   int **positions;
+  sem_array_t mutexes;
   unsigned int distance;
   unsigned int max_cyclists;
 };
@@ -26,13 +28,18 @@ speedway_t speedway_create(unsigned int distance, unsigned int max_cyclists) {
   speedway               = malloc(sizeof(*speedway));
   speedway->distance     = distance;
   speedway->max_cyclists = max_cyclists;
+  speedway->mutexes      = sem_array_create(distance, 0, 1);
 
   speedway->positions = malloc(distance * sizeof(*(speedway->positions)));
   for (i = 0; i < distance; i++) {
+      sem_wait(sem_array_get(speedway->mutexes, i));
+
       speedway->positions[i]
         = malloc(max_cyclists * sizeof(*(speedway->positions[i])));
       for (j = 0; j < max_cyclists; j++)
         speedway->positions[i][j] = -1;
+
+      sem_post(sem_array_get(speedway->mutexes, i));
   }
 
   /* Post-conditions */
@@ -47,7 +54,11 @@ void speedway_destroy(speedway_t speedway) {
   /* Pre-conditions */
   assert(speedway != NULL);
 
-  for (i = 0; i < speedway->distance; i++) free(speedway->positions[i]);
+  for (i = 0; i < speedway->distance; i++) {
+    sem_wait(sem_array_get(speedway->mutexes, i));
+    free(speedway->positions[i]);
+    sem_post(sem_array_get(speedway->mutexes, i));
+  }
   free(speedway->positions);
   free(speedway);
 }
@@ -58,12 +69,14 @@ int speedway_insert_cyclist(speedway_t speedway, int cyclist, int place) {
   /* Pre-conditions */
   assert(speedway != NULL);
 
+  sem_wait(sem_array_get(speedway->mutexes, place));
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
     if (speedway->positions[place][i] == -1) {
       speedway->positions[place][i] = cyclist;
       return i;
     }
   }
+  sem_post(sem_array_get(speedway->mutexes, place));
   return -1;
 }
 
@@ -73,9 +86,11 @@ int speedway_remove_cyclist(speedway_t speedway, int cyclist, int place) {
   /* Pre-conditions */
   assert(speedway != NULL);
 
+  sem_wait(sem_array_get(speedway->mutexes, place));
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
     if (speedway->positions[place][i] == cyclist)
       return i;
   }
+  sem_post(sem_array_get(speedway->mutexes, place));
   return -1;
 }

@@ -90,6 +90,9 @@ pthread_array_t pthread_array_create(
 }
 
 void pthread_array_destroy(pthread_array_t pthread_array) {
+  /* Pre-conditions */
+  assert(pthread_array != NULL);
+
   free(pthread_array->ids);
   free(pthread_array->threads);
   free(pthread_array);
