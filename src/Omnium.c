@@ -10,6 +10,15 @@
 /* Libraries */
 #include "thread.h"
 
+#define RES    "\033[0m"
+#define RED    "\033[1;31m"
+#define GREEN  "\033[1;32m"
+#define YELLOW "\033[1;33m"
+#define BLUE   "\033[1;34m"
+#define PURPLE "\033[1;35m"
+#define CYAN   "\033[1;36m"
+#define WHITE  "\033[1;37m"
+
 int distance, n_cyclists, uniforme;
 
 pthread_barrier_t barrier;
@@ -25,13 +34,13 @@ int sort_initial_position() {
 void d_start(int i) {
   time_t now;
   time(&now);
-  printf("thread%d starting at %s", i, ctime (&now));
+  printf(GREEN "thread[%d]: barrier:" RES " starting at %s", i, ctime (&now));
 }
 
 void d_end(int i) {
   time_t now;
   time(&now);
-  printf ("barrier in thread%d() done at %s", i, ctime(&now));
+  printf(GREEN "thread[%d]: barrier:" RES " done at %s", i, ctime(&now));
 }
 
 void *perform_work(void *argument) {
