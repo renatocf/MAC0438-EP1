@@ -131,11 +131,12 @@ void simulate_race() {
   g_speedway = speedway_create(g_distance, CYCLISTS_PER_POSITION);
   g_speedway_mutexes = sem_array_create(g_distance, 0, TRUE);
 
+  pthread_barrier_init (&barrier, NULL, g_num_cyclists + 1);
+
   /* Threads and barriers */
   threads  = pthread_array_create(g_num_cyclists, perform_work, NULL);
 
   /** Process *****************************************************************/
-  pthread_barrier_init (&barrier, NULL, g_num_cyclists + 1);
 
   /* Start run! */
   printf(YELLOW "race control:" BLUE " starting race!" RES "\n");
