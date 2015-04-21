@@ -44,6 +44,14 @@ void sem_array_destroy(sem_array_t sem_array) {
   free(sem_array);
 }
 
+sem_t *sem_array_get(sem_array_t sem_array, unsigned int i) {
+  /* Pre-conditions */
+  assert(sem_array != NULL);
+  assert(i < sem_array->size);
+
+  return &(sem_array->sems[i]);
+}
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 -------------------------------------------------------------------------------

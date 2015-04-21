@@ -22,6 +22,8 @@ sem_array_t sem_array_create(
 
 void sem_array_destroy(sem_array_t sem_array);
 
+sem_t *sem_array_get(sem_array_t sem_array, unsigned int i);
+
 /*---------------------------------------------------------------------------*/
 /*                             THREAD ARRAY                                  */
 /*---------------------------------------------------------------------------*/
