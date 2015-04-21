@@ -42,9 +42,13 @@ int g_distance, g_num_cyclists, g_uniform;
 
 pthread_barrier_t g_barrier;
 
-unsigned int g_step = 0;
+unsigned int g_step = 0, g_end = FALSE;
 
 speedway_t g_speedway;
+
+unsigned int g_missing = 0;
+unsigned int g_last[3] = { 0, 0, 0 };
+sem_t g_missing_mutex;
 
 /*
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +76,15 @@ void d_end(int i) {
   time_t now;
   time(&now);
   printf(GREEN "thread[%d]: barrier:" RES " done at %s", i, ctime(&now));
+}
+
+void new_turn(int cyclist) {
+  sem_wait(&g_missing_mutex);
+  g_missing--;
+  g_last[0] = g_last[1];
+  g_last[1] = g_last[2];
+  g_last[2] = cyclist;
+  sem_post(&g_missing_mutex);
 }
 
 /*
@@ -112,6 +125,11 @@ void *perform_work(void *argument) {
     printf("thread[%d]: old position = %d!\n", id, position);
     position = speedway_advance_cyclist(g_speedway, id, position);
     printf("thread[%d]: new position = %d!\n", id, position);
+
+    if (position == 0 && g_step != 0) {
+      new_turn(id);
+    }
+
     pthread_barrier_wait(&g_barrier);
   }
 
@@ -124,11 +142,15 @@ void simulate_race() {
 
   /** Variables ***************************************************************/
   pthread_array_t threads;
+  unsigned int cyclists_remaining = g_num_cyclists;
 
   /** Initialize **************************************************************/
 
   /* Speedway */
   g_speedway = speedway_create(g_distance, CYCLISTS_PER_POSITION);
+
+  g_missing = cyclists_remaining;
+  sem_init(&g_missing_mutex, 0, 1);
 
   pthread_barrier_init (&g_barrier, NULL, g_num_cyclists + 1);
 
@@ -143,6 +165,22 @@ void simulate_race() {
 
   while (TRUE) {
     /* Simulator processment */
+    if (g_missing == 0 && g_step != 0) {
+      cyclists_remaining--;
+      g_missing = cyclists_remaining;
+
+      if (cyclists_remaining == 3) {
+        printf(YELLOW "race control:" RES " last:     %d\n", g_last[2]);
+        printf(YELLOW "race control:" RES " 2nd last: %d\n", g_last[1]);
+        printf(YELLOW "race control:" RES " 3rd last: %d\n", g_last[0]);
+      } else {
+        printf(YELLOW "race control:" RES " 1st: %d\n", g_last[0]);
+        printf(YELLOW "race control:" RES " 2nd: %d\n", g_last[1]);
+        printf(YELLOW "race control:" RES " 3rd: %d\n", g_last[2]);
+        break;
+      }
+    }
+
     g_step++;
     printf(YELLOW "race control:" RES " turn %d\n", g_step);
     pthread_barrier_wait(&g_barrier);
