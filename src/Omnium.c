@@ -109,7 +109,9 @@ void *perform_work(void *argument) {
     if (g_turn == 5) break;
 
     /* Cyclist processment */
-    printf("thread[%d]: position = %d!\n", id, position);
+    printf("thread[%d]: old position = %d!\n", id, position);
+    position = speedway_advance_cyclist(g_speedway, id, position);
+    printf("thread[%d]: new position = %d!\n", id, position);
     pthread_barrier_wait(&barrier);
   }
 
