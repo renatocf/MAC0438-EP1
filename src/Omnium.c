@@ -218,7 +218,7 @@ void simulate_race() {
     pthread_barrier_wait(&barrier);
   }
 
-  pthread_array_join(g_num_cyclists, threads);
+  pthread_array_join(threads);
 
   /** End *********************************************************************/
 

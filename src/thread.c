@@ -36,38 +36,48 @@ void sem_array_destroy(sem_array_t sems) {
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 */
 
-static int *pthread_array_n; /* TODO: delete debug array */
+struct _pthread_array_t {
+  pthread_t *threads;
+  unsigned int *ids;
+  unsigned int size;
+};
 
 pthread_array_t pthread_array_create(
     int n, pthread_action_t action, pthread_arg_t args) {
-  int i = 0, result_code = -1;
-  pthread_t *threads = malloc(n * sizeof(*threads));
 
- /* TODO: delete debug array */
-  pthread_array_n = malloc(n * sizeof(*pthread_array_n));
+  unsigned int i = 0;
+  int result_code = -1;
+  pthread_array_t pthread_array;
+ 
+  pthread_array          = malloc(sizeof(*pthread_array));
+  pthread_array->threads = malloc(n * sizeof(*(pthread_array->threads)));
+  pthread_array->ids     = malloc(n * sizeof(*(pthread_array->ids)));
+  pthread_array->size    = n;
 
-  for (i = 0; i < n; i++) {
-    pthread_array_n[i] = i;
+  for (i = 0; i < pthread_array->size; i++) {
+    pthread_array->ids[i] = i;
     result_code = pthread_create(
-      /* TODO: delete resource */
-      &threads[i], NULL, action, (void *) &pthread_array_n[i]);
+      &(pthread_array->threads[i]), NULL, action,
+      (void *) &(pthread_array->ids[i]));
     assert(result_code == 0);
   }
 
-  return threads;
+  return pthread_array;
 }
 
-void pthread_array_destroy(pthread_array_t threads) {
-  free(pthread_array_n);
-  free(threads);
+void pthread_array_destroy(pthread_array_t pthread_array) {
+  free(pthread_array->ids);
+  free(pthread_array->threads);
+  free(pthread_array);
 }
 
-void pthread_array_join(int n, pthread_array_t threads) {
+void pthread_array_join(pthread_array_t pthread_array) {
 
-  int i = 0, result_code = -1;
+  unsigned int i = 0;
+  int result_code = -1;
 
-  for (i = 0; i < n; i++) {
-    result_code = pthread_join(threads[i], NULL);
+  for (i = 0; i < pthread_array->size; i++) {
+    result_code = pthread_join(pthread_array->threads[i], NULL);
     assert(result_code == 0);
   }
 }
