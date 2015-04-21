@@ -73,6 +73,7 @@ int speedway_insert_cyclist(speedway_t speedway, int cyclist, int place) {
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
     if (speedway->positions[place][i] == -1) {
       speedway->positions[place][i] = cyclist;
+      sem_post(sem_array_get(speedway->mutexes, place));
       return i;
     }
   }
@@ -89,6 +90,7 @@ int speedway_remove_cyclist(speedway_t speedway, int cyclist, int place) {
   sem_wait(sem_array_get(speedway->mutexes, place));
   for (i = 0; (unsigned int) i < speedway->max_cyclists; i++) {
     if (speedway->positions[place][i] == cyclist)
+      sem_post(sem_array_get(speedway->mutexes, place));
       return i;
   }
   sem_post(sem_array_get(speedway->mutexes, place));
