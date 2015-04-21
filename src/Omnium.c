@@ -9,6 +9,7 @@
 
 /* Libraries */
 #include "thread.h"
+#include "speedway.h"
 
 /* Constraints */
 #define MIN_CYCLISTS 3
@@ -72,68 +73,6 @@ void d_end(int i) {
   time_t now;
   time(&now);
   printf(GREEN "thread[%d]: barrier:" RES " done at %s", i, ctime(&now));
-}
-
-int **speedway_create(int distance, int max_cyclists) {
-  int i = 0, j = 0;
-  int **speedway = NULL;
-
-  /* Pre-conditions */
-  assert(distance > 0);
-  assert(max_cyclists > 0);
-
-  speedway = (int **) malloc (distance * sizeof(*speedway));
-  for (i = 0; i < distance; i++) {
-      speedway[i] = malloc(max_cyclists * sizeof(*speedway[i]));
-      for (j = 0; j < max_cyclists; j++)
-          speedway[i][j] = -1;
-  }
-
-  /* Post-conditions */
-  assert(speedway != NULL);
-  return speedway;
-}
-
-void speedway_destroy(int **speedway) {
-  int i = 0;
-
-  /* Pre-conditions */
-  assert(speedway != NULL);
-
-  for (i = 0; i < g_distance; i++) free(speedway[i]);
-  free(speedway);
-}
-
-int speedway_insert_cyclist(int **speedway, int cyclist, int position) {
-  int i = 0;
-
-  /* Pre-conditions */
-  assert(speedway != NULL);
-  assert(cyclist >= 0 && cyclist <= g_num_cyclists);
-  assert(position >= 0 && position <= g_distance);
-
-  for (i = 0; i < CYCLISTS_PER_POSITION; i++) {
-    if (speedway[position][i] == -1) {
-      speedway[position][i] = cyclist;
-      return i;
-    }
-  }
-  return -1;
-}
-
-int speedway_remove_cyclist(int **speedway, int cyclist, int position) {
-  int i = 0;
-
-  /* Pre-conditions */
-  assert(speedway != NULL);
-  assert(cyclist >= 0 && cyclist <= g_num_cyclists);
-  assert(position >= 0 && position <= g_distance);
-
-  for (i = 0; i < CYCLISTS_PER_POSITION; i++) {
-    if (speedway[position][i] == cyclist)
-      return i;
-  }
-  return -1;
 }
 
 /*
@@ -227,7 +166,7 @@ void simulate_race() {
 
   /* Speedway */
   sem_array_destroy(g_speedway_mutexes);
-  speedway_destroy(g_speedway);
+  speedway_destroy(g_speedway, g_distance);
 
   printf("In main: All threads completed successfully\n");
 }
