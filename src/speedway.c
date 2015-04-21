@@ -14,12 +14,27 @@
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 */
 
+/*---------------------------------------------------------------------------*/
+/*                              DEFINITIONS                                  */
+/*---------------------------------------------------------------------------*/
+
 struct _speedway_t {
   int **positions;
   sem_array_t mutexes;
   unsigned int distance;
   unsigned int max_cyclists;
 };
+
+static int speedway_insert_cyclist_impl(speedway_t speedway,
+                                        unsigned int cyclist,
+                                        unsigned int pos);
+static int speedway_remove_cyclist_impl(speedway_t speedway,
+                                        unsigned int cyclist,
+                                        unsigned int pos);
+
+/*---------------------------------------------------------------------------*/
+/*                            PUBLIC FUNCTIONS                               */
+/*---------------------------------------------------------------------------*/
 
 speedway_t speedway_create(unsigned int distance, unsigned int max_cyclists) {
   unsigned int i = 0, j = 0;
@@ -67,37 +82,55 @@ void speedway_destroy(speedway_t speedway) {
 int speedway_insert_cyclist(speedway_t speedway,
                             unsigned int cyclist,
                             unsigned int pos) {
-  unsigned int i = 0;
-
-  /* Pre-conditions */
-  assert(speedway != NULL);
-
+  int result_code = -1;
   sem_wait(sem_array_get(speedway->mutexes, pos));
-  for (i = 0; i < speedway->max_cyclists; i++) {
-    if (speedway->positions[pos][i] == -1) {
-      speedway->positions[pos][i] = cyclist;
-      sem_post(sem_array_get(speedway->mutexes, pos));
-      return (int) i;
-    }
-  }
+  result_code = speedway_insert_cyclist_impl(speedway, cyclist, pos);
   sem_post(sem_array_get(speedway->mutexes, pos));
-  return -1;
+  return result_code;
 }
 
 int speedway_remove_cyclist(speedway_t speedway,
                             unsigned int cyclist,
                             unsigned int pos) {
+  int result_code = -1;
+  sem_wait(sem_array_get(speedway->mutexes, pos));
+  result_code = speedway_remove_cyclist_impl(speedway, cyclist, pos);
+  sem_post(sem_array_get(speedway->mutexes, pos));
+  return result_code;
+}
+
+/*---------------------------------------------------------------------------*/
+/*                            PRIVATE FUNCTIONS                              */
+/*---------------------------------------------------------------------------*/
+
+static int speedway_insert_cyclist_impl(speedway_t speedway,
+                                        unsigned int cyclist,
+                                        unsigned int pos) {
   unsigned int i = 0;
 
   /* Pre-conditions */
   assert(speedway != NULL);
 
-  sem_wait(sem_array_get(speedway->mutexes, pos));
+  for (i = 0; i < speedway->max_cyclists; i++) {
+    if (speedway->positions[pos][i] == -1) {
+      speedway->positions[pos][i] = cyclist;
+      return (int) i;
+    }
+  }
+  return -1;
+}
+
+static int speedway_remove_cyclist_impl(speedway_t speedway,
+                                        unsigned int cyclist,
+                                        unsigned int pos) {
+  unsigned int i = 0;
+
+  /* Pre-conditions */
+  assert(speedway != NULL);
+
   for (i = 0; i < speedway->max_cyclists; i++) {
     if (speedway->positions[pos][i] == cyclist)
-      sem_post(sem_array_get(speedway->mutexes, pos));
       return (int) i;
   }
-  sem_post(sem_array_get(speedway->mutexes, pos));
   return -1;
 }
