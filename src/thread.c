@@ -13,19 +13,32 @@
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 */
 
-sem_array_t sem_array_create(int n, int pshared, unsigned int value) {
-  int i = 0, result_code = -1;
-  sem_t *sems = malloc(n * sizeof(*sems));
+struct _sem_array_t {
+  sem_t *sems;
+  unsigned int size;
+};
+
+sem_array_t sem_array_create(
+    unsigned int n, int pshared, unsigned int value) {
+
+  unsigned int i = 0;
+  int result_code = -1;
+  sem_array_t sem_array = NULL;
+
+  sem_array       = malloc(sizeof(*sem_array));
+  sem_array->sems = malloc(n * sizeof(*(sem_array->sems)));
+  sem_array->size = n;
 
   for (i = 0; i < n; i++) {
-    result_code = sem_init(&sems[i], pshared, value);
+    result_code = sem_init(&sem_array->sems[i], pshared, value);
     assert(result_code == 0);
   }
-  return sems;
+  return sem_array;
 }
 
-void sem_array_destroy(sem_array_t sems) {
-  free(sems);
+void sem_array_destroy(sem_array_t sem_array) {
+  free(sem_array->sems);
+  free(sem_array);
 }
 
 /*
@@ -43,11 +56,11 @@ struct _pthread_array_t {
 };
 
 pthread_array_t pthread_array_create(
-    int n, pthread_action_t action, pthread_arg_t args) {
+    unsigned int n, pthread_action_t action, pthread_arg_t args) {
 
   unsigned int i = 0;
   int result_code = -1;
-  pthread_array_t pthread_array;
+  pthread_array_t pthread_array = NULL;
  
   pthread_array          = malloc(sizeof(*pthread_array));
   pthread_array->threads = malloc(n * sizeof(*(pthread_array->threads)));
