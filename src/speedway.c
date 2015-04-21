@@ -104,6 +104,7 @@ int speedway_move_cyclist(speedway_t speedway,
                           unsigned int old_pos,
                           unsigned int new_pos) {
   int result_code = -1;
+
   sem_wait(sem_array_get(speedway->mutexes, old_pos));
   sem_wait(sem_array_get(speedway->mutexes, new_pos));
 
@@ -156,9 +157,10 @@ static int speedway_remove_cyclist_impl(speedway_t speedway,
   assert(pos < speedway->distance);
 
   for (i = 0; i < speedway->max_cyclists; i++) {
-    if (speedway->positions[pos][i] == cyclist)
+    if (speedway->positions[pos][i] == cyclist) {
       speedway->positions[pos][i] = -1;
       return (int) i;
+    }
   }
   return -1;
 }
