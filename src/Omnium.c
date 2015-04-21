@@ -43,7 +43,7 @@ pthread_barrier_t barrier;
 
 unsigned int g_turn = 0;
 
-int **g_speedway;
+speedway_t g_speedway;
 
 sem_array_t g_speedway_mutexes;
 
@@ -166,7 +166,7 @@ void simulate_race() {
 
   /* Speedway */
   sem_array_destroy(g_speedway_mutexes);
-  speedway_destroy(g_speedway, g_distance);
+  speedway_destroy(g_speedway);
 
   printf("In main: All threads completed successfully\n");
 }

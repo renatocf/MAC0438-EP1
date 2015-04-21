@@ -1,12 +1,20 @@
 #ifndef H_OMNIUM_SPEEDWAY_DEFINED
 #define H_OMNIUM_SPEEDWAY_DEFINED
 
-int **speedway_create(int distance, int max_cyclists);
+/*---------------------------------------------------------------------------*/
+/*                               SPEEDWAY                                    */
+/*---------------------------------------------------------------------------*/
 
-void speedway_destroy(int **speedway, int distance);
+/* Types */
+typedef struct _speedway_t *speedway_t;
 
-int speedway_insert_cyclist(int **speedway, int cyclist, int position);
+/* Functios */
+speedway_t speedway_create(unsigned int distance, unsigned int max_cyclists);
 
-int speedway_remove_cyclist(int **speedway, int cyclist, int position);
+void speedway_destroy(speedway_t speedway);
+
+int speedway_insert_cyclist(speedway_t speedway, int cyclist, int place);
+
+int speedway_remove_cyclist(speedway_t speedway, int cyclist, int place);
 
 #endif
