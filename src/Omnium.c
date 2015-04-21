@@ -87,16 +87,16 @@ void *perform_work(void *argument) {
   int id = *((int *) argument);
   int position = -1;
   int half = 0;
-  int pos = -1;
+  int place = -1;
 
   do {
     position = sort_initial_position();
-  } while ((pos = speedway_insert_cyclist(g_speedway, id, position)) == -1);
+  } while ((place = speedway_insert_cyclist(g_speedway, id, position)) == -1);
 
   d_start(id); /* TODO: remove */
 
   /** Process *****************************************************************/
-  printf("thread[%d]: initial position = [%d,%d]!\n", id, position, pos);
+  printf("thread[%d]: initial position = [%d,%d]!\n", id, position, place);
 
   /* Start run! */
   pthread_barrier_wait(&barrier);
