@@ -40,7 +40,7 @@
 
 int g_distance, g_num_cyclists, g_uniform;
 
-pthread_barrier_t barrier;
+pthread_barrier_t g_barrier;
 
 unsigned int g_turn = 0;
 
@@ -100,11 +100,11 @@ void *perform_work(void *argument) {
   printf("thread[%d]: initial position = [%d,%d]!\n", id, position, place);
 
   /* Start run! */
-  pthread_barrier_wait(&barrier);
+  pthread_barrier_wait(&g_barrier);
 
   while (TRUE) {
     /* Simulator processment */
-    pthread_barrier_wait(&barrier);
+    pthread_barrier_wait(&g_barrier);
 
     /* Exit conditions */
     if (g_turn == MAX_TURNS) break;
@@ -113,7 +113,7 @@ void *perform_work(void *argument) {
     printf("thread[%d]: old position = %d!\n", id, position);
     position = speedway_advance_cyclist(g_speedway, id, position);
     printf("thread[%d]: new position = %d!\n", id, position);
-    pthread_barrier_wait(&barrier);
+    pthread_barrier_wait(&g_barrier);
   }
 
   /** End *********************************************************************/
@@ -131,7 +131,7 @@ void simulate_race() {
   /* Speedway */
   g_speedway = speedway_create(g_distance, CYCLISTS_PER_POSITION);
 
-  pthread_barrier_init (&barrier, NULL, g_num_cyclists + 1);
+  pthread_barrier_init (&g_barrier, NULL, g_num_cyclists + 1);
 
   /* Threads and barriers */
   threads  = pthread_array_create(g_num_cyclists, perform_work, NULL);
@@ -140,13 +140,13 @@ void simulate_race() {
 
   /* Start run! */
   printf(YELLOW "race control:" BLUE " starting race!" RES "\n");
-  pthread_barrier_wait(&barrier);
+  pthread_barrier_wait(&g_barrier);
 
   while (TRUE) {
     /* Simulator processment */
     g_turn++;
     printf(YELLOW "race control:" RES " turn %d\n", g_turn);
-    pthread_barrier_wait(&barrier);
+    pthread_barrier_wait(&g_barrier);
 
     /* Exit conditions */
     if (g_turn == MAX_TURNS) {
@@ -155,7 +155,7 @@ void simulate_race() {
     }
 
     /* Cyclist processment */
-    pthread_barrier_wait(&barrier);
+    pthread_barrier_wait(&g_barrier);
   }
 
   pthread_array_join(threads);
