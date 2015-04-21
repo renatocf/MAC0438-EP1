@@ -12,7 +12,7 @@
 #include "speedway.h"
 
 /* Constraints */
-#define MAX_TURNS    5 /* TODO: remove constraint */
+#define MAX_STEPS    251 /* TODO: remove constraint */
 #define MIN_CYCLISTS 3
 #define MIN_DISTANCE 249
 #define CYCLISTS_PER_POSITION 4
@@ -42,7 +42,7 @@ int g_distance, g_num_cyclists, g_uniform;
 
 pthread_barrier_t g_barrier;
 
-unsigned int g_turn = 0;
+unsigned int g_step = 0;
 
 speedway_t g_speedway;
 
@@ -86,9 +86,8 @@ void *perform_work(void *argument) {
 
   /** Initialize **************************************************************/
   int id = *((int *) argument);
-  int position = -1;
+  int position = -1, place = -1;
   int half = 0;
-  int place = -1;
 
   do {
     position = sort_initial_position();
@@ -107,7 +106,7 @@ void *perform_work(void *argument) {
     pthread_barrier_wait(&g_barrier);
 
     /* Exit conditions */
-    if (g_turn == MAX_TURNS) break;
+    if (g_step == MAX_STEPS) break;
 
     /* Cyclist processment */
     printf("thread[%d]: old position = %d!\n", id, position);
@@ -144,12 +143,12 @@ void simulate_race() {
 
   while (TRUE) {
     /* Simulator processment */
-    g_turn++;
-    printf(YELLOW "race control:" RES " turn %d\n", g_turn);
+    g_step++;
+    printf(YELLOW "race control:" RES " turn %d\n", g_step);
     pthread_barrier_wait(&g_barrier);
 
     /* Exit conditions */
-    if (g_turn == MAX_TURNS) {
+    if (g_step == MAX_STEPS) {
       printf(YELLOW "race control:" BLUE " end race!" RES "\n");
       break;
     }
@@ -219,6 +218,8 @@ int main(int argc, char **argv) {
   }
 
   printf("d:%d n:%d uniform:%d\n", g_distance, g_num_cyclists, g_uniform);
+
+  printf(YELLOW "Using seed: %ld" RES "\n", (long) now);
 
   simulate_race();
 
