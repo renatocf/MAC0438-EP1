@@ -149,6 +149,8 @@ void *perform_work(void *argument) {
       if (g_break) break;
 
       /* Cyclist processment */
+
+
       position = speedway_advance_cyclist(g_speedway, id, position);
       if (position == 0 && g_step != 0) new_turn(id);
 
@@ -237,7 +239,9 @@ void simulate_race() {
           to_remove = TRUE;
           g_break = TRUE;
         }
-        can_break = TRUE;
+
+        if (cyclists_remaining != 3)
+          can_break = TRUE;
       }
 
       g_step++;
