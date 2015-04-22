@@ -174,7 +174,7 @@ void simulate_race() {
   pthread_barrier_init (&g_barrier, NULL, cyclists_remaining + 1);
 
   /* Threads and barriers */
-  threads  = pthread_array_create(g_num_cyclists, perform_work, NULL);
+  threads = pthread_array_create(g_num_cyclists, perform_work, NULL);
 
   /** Process *****************************************************************/
 

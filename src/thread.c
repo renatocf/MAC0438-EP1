@@ -109,9 +109,12 @@ int pthread_array_remove(pthread_array_t pthread_array,
 }
 
 void pthread_array_destroy(pthread_array_t pthread_array) {
+  unsigned int i = 0;
+
   /* Pre-conditions */
   assert(pthread_array != NULL);
 
+  free(pthread_array->joined);
   free(pthread_array->ids);
   free(pthread_array->threads);
   free(pthread_array);
