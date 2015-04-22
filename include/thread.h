@@ -50,4 +50,12 @@ int pthread_barrier_reset(pthread_barrier_t *barrier,
                           pthread_barrierattr_t *attr,
                           unsigned int count);
 
+/*---------------------------------------------------------------------------*/
+/*                               SEMAPHORES                                  */
+/*---------------------------------------------------------------------------*/
+
+int sem_mult_wait(sem_t *sem, unsigned int n);
+
+int sem_mult_post(sem_t *sem, unsigned int n);
+
 #endif

@@ -145,3 +145,31 @@ int pthread_barrier_reset(pthread_barrier_t *barrier,
 
   return result_code;
 }
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+-------------------------------------------------------------------------------
+                                SEMAPHORE
+-------------------------------------------------------------------------------
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
+
+int sem_mult_wait(sem_t *sem, unsigned int n) {
+  unsigned int i = 0;
+  int result_code = -1;
+  for (i = 0; i < n; i++) {
+    result_code = sem_wait(sem);
+    assert(result_code == 0);
+  }
+  return result_code;
+}
+
+int sem_mult_post(sem_t *sem, unsigned int n) {
+  unsigned int i = 0;
+  int result_code = -1;
+  for (i = 0; i < n; i++) {
+    result_code = sem_post(sem);
+    assert(result_code == 0);
+  }
+  return result_code;
+}
