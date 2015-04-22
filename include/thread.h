@@ -42,4 +42,12 @@ void pthread_array_join(pthread_array_t pthread_array);
 int pthread_array_remove(pthread_array_t pthread_array,
                          unsigned int i);
 
+/*---------------------------------------------------------------------------*/
+/*                                BARRIER                                    */
+/*---------------------------------------------------------------------------*/
+
+int pthread_barrier_reset(pthread_barrier_t *barrier,
+                          pthread_barrierattr_t *attr,
+                          unsigned int count);
+
 #endif

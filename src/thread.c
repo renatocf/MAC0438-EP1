@@ -123,3 +123,25 @@ void pthread_array_join(pthread_array_t pthread_array) {
   for (i = 0; i < pthread_array->size; i++)
     pthread_array_remove(pthread_array, i);
 }
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+-------------------------------------------------------------------------------
+                                  BARRIER
+-------------------------------------------------------------------------------
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+*/
+
+int pthread_barrier_reset(pthread_barrier_t *barrier,
+                          pthread_barrierattr_t *attr,
+                          unsigned int count) {
+  int result_code = -1;
+
+  result_code = pthread_barrier_destroy(barrier);
+  assert(result_code == 0);
+
+  pthread_barrier_init(barrier, attr, count);
+  assert(result_code == 0);
+
+  return result_code;
+}

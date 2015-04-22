@@ -234,9 +234,8 @@ void simulate_race() {
       unsigned int i = 0;
       printf(YELLOW "race control:" RES " removing %d\n", g_removed_id);
       pthread_array_remove(threads, g_removed_id);
+      pthread_barrier_reset(&g_barrier, NULL, cyclists_remaining + 1);
 
-      pthread_barrier_destroy (&g_barrier);
-      pthread_barrier_init (&g_barrier, NULL, cyclists_remaining + 1);
       g_to_remove = TRUE;
       for (i = 0; i < cyclists_remaining; i++) sem_post(&g_deletion);
     }
