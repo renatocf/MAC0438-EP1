@@ -81,6 +81,10 @@ int sort_broken_cyclist(pthread_array_t threads) {
   return -1;
 }
 
+int sort_speedy() {
+  return (generate_aleatory(0, 1) == 1) ? 50 : 25;
+}
+
 void d_start(int i) {
   time_t now;
   time(&now);
@@ -126,7 +130,8 @@ void *perform_work(void *argument) {
   /** Initialize **************************************************************/
   int id = *((int *) argument);
   int position = -1, place = -1;
-  int half = 0, turn = 0;
+  int speedy = (g_uniform) ? 50 : 25;
+  int half = TRUE;
 
   do {
     position = sort_initial_position();
@@ -149,10 +154,16 @@ void *perform_work(void *argument) {
       if (g_break) break;
 
       /* Cyclist processment */
+      if (speedy == 50 || (speedy == 25 && half == TRUE)) {
+        position = speedway_advance_cyclist(g_speedway, id, position);
+        if (position == 0 && g_step != 0) new_turn(id);
+        half = FALSE;
+      } else {
+        half = TRUE;
+      }
 
-
-      position = speedway_advance_cyclist(g_speedway, id, position);
-      if (position == 0 && g_step != 0) new_turn(id);
+      if (position == 0 && g_step != 0)
+        speedy = sort_speedy();
 
       pthread_barrier_wait(&g_barrier);
     }
