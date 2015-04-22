@@ -63,11 +63,22 @@ sem_t g_deletion;
 */
 
 int generate_aleatory(int min, int max) {
-  return (int) (min + ((rand() * 1.0)/RAND_MAX) * max + 0.5);
+  return (int) (min + ((rand() * 1.0)/RAND_MAX) * (max-min+1) + 0.5);
 }
 
 int sort_initial_position() {
   return generate_aleatory(0, g_num_cyclists/CYCLISTS_PER_POSITION-1);
+}
+
+int sort_broken_cyclist(pthread_array_t threads) {
+  int random = generate_aleatory(1, 100);
+  if (random == 1) {
+    do {
+      random = generate_aleatory(0, g_num_cyclists);
+    } while (!pthread_array_is_joinable(threads, random));
+    return random;
+  }
+  return -1;
 }
 
 void d_start(int i) {
@@ -115,7 +126,7 @@ void *perform_work(void *argument) {
   /** Initialize **************************************************************/
   int id = *((int *) argument);
   int position = -1, place = -1;
-  int half = 0;
+  int half = 0, turn = 0;
 
   do {
     position = sort_initial_position();
@@ -160,7 +171,8 @@ void simulate_race() {
 
   /** Variables ***************************************************************/
   pthread_array_t threads;
-  unsigned int turns = 0;
+  unsigned int turn = 0;
+  unsigned int can_break = FALSE;
   unsigned int cyclists_remaining = g_num_cyclists;
 
   /** Initialize **************************************************************/
@@ -186,18 +198,36 @@ void simulate_race() {
 
   do {
     int to_remove = FALSE;
+
     g_break = FALSE;
 
     while (TRUE) {
       /* Simulator processment */
-      if (g_missing == 0 && g_step != 0) {
-        turns++;
 
-        race_statistics(cyclists_remaining, turns);
+      /* special case: cyclist breaks */
+      if (can_break) {
+        if (turn % 4 == 0) {
+          int cyclist = sort_broken_cyclist(threads);
+          if (cyclist != -1) {
+            cyclists_remaining--;
+            g_removed_id = cyclist;
+            g_break = TRUE;
+            to_remove = TRUE;
+          }
+        }
+        can_break = FALSE;
+      }
+
+      /* special case: turn finishes */
+      if (g_missing == 0 && g_step != 0) {
+        turn++;
+
+        race_statistics(cyclists_remaining, turn);
 
         if (cyclists_remaining == 3) {
           g_end = TRUE;
-        } else {
+          g_break = TRUE;
+        } else if (turn % 2 == 0) {
           cyclists_remaining--;
           g_missing = cyclists_remaining;
 
@@ -205,8 +235,9 @@ void simulate_race() {
           sem_reset(&g_deletion, 0, 0);
 
           to_remove = TRUE;
+          g_break = TRUE;
         }
-        g_break = TRUE;
+        can_break = TRUE;
       }
 
       g_step++;

@@ -127,6 +127,10 @@ void pthread_array_join(pthread_array_t pthread_array) {
     pthread_array_remove(pthread_array, i);
 }
 
+int pthread_array_is_joinable(pthread_array_t pthread_array, unsigned int i) {
+  return (pthread_array->joined[i] == FALSE);
+}
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 -------------------------------------------------------------------------------
