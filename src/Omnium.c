@@ -42,13 +42,18 @@ int g_distance, g_num_cyclists, g_uniform;
 
 pthread_barrier_t g_barrier;
 
-unsigned int g_step = 0, g_end = FALSE;
+unsigned int g_step = 0;
+unsigned int g_end = FALSE, g_break = FALSE;
 
 speedway_t g_speedway;
 
 unsigned int g_missing = 0;
 unsigned int g_last[3] = { 0, 0, 0 };
 sem_t g_missing_mutex;
+
+unsigned int g_to_remove = FALSE, g_removed_id = 0;
+sem_t g_deletion;
+
 
 /*
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +92,17 @@ void new_turn(int cyclist) {
   sem_post(&g_missing_mutex);
 }
 
+void race_statistics(unsigned int cyclists_remaining, unsigned int turn) {
+  printf(YELLOW "race control (turn %d): " RES, turn);
+  if (cyclists_remaining != 3)
+    printf("[ 3rd last: %d, 2nd last: %d, " RED "last: %d" RES " ]",
+      g_last[0], g_last[1], g_last[2]);
+  else
+    printf("[ Cupper: %d, Silver: %d, " YELLOW "Gold: %d" RES " ]",
+      g_last[2], g_last[1], g_last[0]);
+  printf("\n");
+}
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 -------------------------------------------------------------------------------
@@ -114,24 +130,33 @@ void *perform_work(void *argument) {
   /* Start run! */
   pthread_barrier_wait(&g_barrier);
 
-  while (TRUE) {
-    /* Simulator processment */
-    pthread_barrier_wait(&g_barrier);
+  do {
+    while (TRUE) {
+      /* Simulator processment */
+      pthread_barrier_wait(&g_barrier);
+      printf("thread[%d]: on barrier!\n", id);
 
-    /* Exit conditions */
-    if (g_step == MAX_STEPS) break;
+      /* Exit conditions */
+      if (g_break) break;
 
-    /* Cyclist processment */
-    printf("thread[%d]: old position = %d!\n", id, position);
-    position = speedway_advance_cyclist(g_speedway, id, position);
-    printf("thread[%d]: new position = %d!\n", id, position);
+      /* Cyclist processment */
+      /* printf("thread[%d]: old position = %d!\n", id, position); */
+      position = speedway_advance_cyclist(g_speedway, id, position);
+      /* printf("thread[%d]: new position = %d!\n", id, position); */
 
-    if (position == 0 && g_step != 0) {
-      new_turn(id);
+      if (position == 0 && g_step != 0) {
+        new_turn(id);
+      }
+
+      pthread_barrier_wait(&g_barrier);
     }
 
-    pthread_barrier_wait(&g_barrier);
-  }
+    if (g_end) break;
+
+    if (id == g_removed_id) break;
+    else sem_wait(&g_deletion);
+
+  } while (!g_end);
 
   /** End *********************************************************************/
   d_end(id); /* TODO: remove */
@@ -142,6 +167,7 @@ void simulate_race() {
 
   /** Variables ***************************************************************/
   pthread_array_t threads;
+  unsigned int turns = 0;
   unsigned int cyclists_remaining = g_num_cyclists;
 
   /** Initialize **************************************************************/
@@ -152,7 +178,7 @@ void simulate_race() {
   g_missing = cyclists_remaining;
   sem_init(&g_missing_mutex, 0, 1);
 
-  pthread_barrier_init (&g_barrier, NULL, g_num_cyclists + 1);
+  pthread_barrier_init (&g_barrier, NULL, cyclists_remaining + 1);
 
   /* Threads and barriers */
   threads  = pthread_array_create(g_num_cyclists, perform_work, NULL);
@@ -163,37 +189,61 @@ void simulate_race() {
   printf(YELLOW "race control:" BLUE " starting race!" RES "\n");
   pthread_barrier_wait(&g_barrier);
 
-  while (TRUE) {
-    /* Simulator processment */
-    if (g_missing == 0 && g_step != 0) {
-      cyclists_remaining--;
-      g_missing = cyclists_remaining;
+  printf("\n=============================================================\n\n");
 
-      if (cyclists_remaining == 3) {
-        printf(YELLOW "race control:" RES " last:     %d\n", g_last[2]);
-        printf(YELLOW "race control:" RES " 2nd last: %d\n", g_last[1]);
-        printf(YELLOW "race control:" RES " 3rd last: %d\n", g_last[0]);
-      } else {
-        printf(YELLOW "race control:" RES " 1st: %d\n", g_last[0]);
-        printf(YELLOW "race control:" RES " 2nd: %d\n", g_last[1]);
-        printf(YELLOW "race control:" RES " 3rd: %d\n", g_last[2]);
-        break;
+  do {
+
+    g_break = FALSE;
+    g_to_remove = FALSE;
+
+    while (TRUE) {
+      /* Simulator processment */
+      if (g_missing == 0 && g_step != 0) {
+        turns++;
+
+        race_statistics(cyclists_remaining, turns);
+
+        if (cyclists_remaining == 3) {
+          g_end = TRUE;
+        } else {
+          cyclists_remaining--;
+          g_missing = cyclists_remaining;
+
+          g_removed_id = g_last[2];
+          g_to_remove = TRUE;
+
+          sem_destroy(&g_deletion);
+          sem_init(&g_deletion, 0, 0);
+        }
+        g_break = TRUE;
       }
+
+      g_step++;
+      printf(YELLOW "race control:" RES " step %d\n", g_step);
+
+      pthread_barrier_wait(&g_barrier);
+
+      /* Exit conditions */
+      if (g_break) break;
+
+      /* Cyclist processment */
+      pthread_barrier_wait(&g_barrier);
     }
 
-    g_step++;
-    printf(YELLOW "race control:" RES " turn %d\n", g_step);
-    pthread_barrier_wait(&g_barrier);
+    if (g_to_remove) {
+      unsigned int i = 0;
+      printf(YELLOW "race control:" RES " removing %d\n", g_removed_id);
+      pthread_array_remove(threads, g_removed_id);
 
-    /* Exit conditions */
-    if (g_step == MAX_STEPS) {
-      printf(YELLOW "race control:" BLUE " end race!" RES "\n");
-      break;
+      pthread_barrier_destroy (&g_barrier);
+      pthread_barrier_init (&g_barrier, NULL, cyclists_remaining + 1);
+      g_to_remove = TRUE;
+      for (i = 0; i < cyclists_remaining; i++) sem_post(&g_deletion);
     }
 
-    /* Cyclist processment */
-    pthread_barrier_wait(&g_barrier);
-  }
+  } while (!g_end);
+
+  printf("\n=============================================================\n\n");
 
   pthread_array_join(threads);
 
