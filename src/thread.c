@@ -154,6 +154,18 @@ int pthread_barrier_reset(pthread_barrier_t *barrier,
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 */
 
+int sem_reset(sem_t *sem, int pshared, unsigned int value) {
+  int result_code = -1;
+
+  result_code = sem_destroy(sem);
+  assert(result_code == 0);
+
+  result_code = sem_init(sem, pshared, value);
+  assert(result_code == 0);
+
+  return result_code;
+}
+
 int sem_mult_wait(sem_t *sem, unsigned int n) {
   unsigned int i = 0;
   int result_code = -1;

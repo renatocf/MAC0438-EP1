@@ -202,9 +202,7 @@ void simulate_race() {
           g_missing = cyclists_remaining;
 
           g_removed_id = g_last[2];
-
-          sem_destroy(&g_deletion);
-          sem_init(&g_deletion, 0, 0);
+          sem_reset(&g_deletion, 0, 0);
 
           to_remove = TRUE;
         }
