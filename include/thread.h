@@ -39,4 +39,7 @@ void pthread_array_destroy(pthread_array_t pthread_array);
 
 void pthread_array_join(pthread_array_t pthread_array);
 
+int pthread_array_remove(pthread_array_t pthread_array,
+                         unsigned int i);
+
 #endif

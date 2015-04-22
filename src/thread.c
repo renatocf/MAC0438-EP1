@@ -5,6 +5,10 @@
 /* Libraries */
 #include "thread.h"
 
+/* Constants */
+#define TRUE (1 == 1)
+#define FALSE !(TRUE)
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 -------------------------------------------------------------------------------
@@ -62,8 +66,9 @@ sem_t *sem_array_get(sem_array_t sem_array, unsigned int i) {
 
 struct _pthread_array_t {
   pthread_t *threads;
-  unsigned int *ids;
   unsigned int size;
+  unsigned int *ids;
+  unsigned int *joined;
 };
 
 pthread_array_t pthread_array_create(
@@ -76,10 +81,12 @@ pthread_array_t pthread_array_create(
   pthread_array          = malloc(sizeof(*pthread_array));
   pthread_array->threads = malloc(n * sizeof(*(pthread_array->threads)));
   pthread_array->ids     = malloc(n * sizeof(*(pthread_array->ids)));
+  pthread_array->joined  = malloc(n * sizeof(*(pthread_array->joined)));
   pthread_array->size    = n;
 
   for (i = 0; i < pthread_array->size; i++) {
     pthread_array->ids[i] = i;
+    pthread_array->joined[i] = FALSE;
     result_code = pthread_create(
       &(pthread_array->threads[i]), NULL, action,
       (void *) &(pthread_array->ids[i]));
@@ -87,6 +94,18 @@ pthread_array_t pthread_array_create(
   }
 
   return pthread_array;
+}
+
+int pthread_array_remove(pthread_array_t pthread_array,
+                         unsigned int i) {
+  int result_code = 0;
+  if (!pthread_array->joined[i]) {
+    result_code = pthread_join(pthread_array->threads[i], NULL);
+    assert(result_code == 0);
+    pthread_array->joined[i] = TRUE;
+    pthread_array->size--;
+  }
+  return result_code;
 }
 
 void pthread_array_destroy(pthread_array_t pthread_array) {
@@ -101,10 +120,6 @@ void pthread_array_destroy(pthread_array_t pthread_array) {
 void pthread_array_join(pthread_array_t pthread_array) {
 
   unsigned int i = 0;
-  int result_code = -1;
-
-  for (i = 0; i < pthread_array->size; i++) {
-    result_code = pthread_join(pthread_array->threads[i], NULL);
-    assert(result_code == 0);
-  }
+  for (i = 0; i < pthread_array->size; i++)
+    pthread_array_remove(pthread_array, i);
 }
