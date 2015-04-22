@@ -26,9 +26,9 @@ BIN := Omnium
 # =======
 CPPFLAGS        := -D_GNU_SOURCE
 # ASFLAGS         := # Assembly Flags
-CFLAGS          := -ansi -Wall -pedantic -O2
+CFLAGS          := -ansi -Wall -pedantic -O2 -g
 # CXXFLAGS        := # C++ Flags
-# LDFLAGS         := # Linker flags
+LDFLAGS         := -g
 
 # Makeball list
 # ===============
