@@ -51,9 +51,8 @@ unsigned int g_missing = 0;
 unsigned int g_last[3] = { 0, 0, 0 };
 sem_t g_missing_mutex;
 
-unsigned int g_to_remove = FALSE, g_removed_id = 0;
+unsigned g_removed_id = 0;
 sem_t g_deletion;
-
 
 /*
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,19 +133,13 @@ void *perform_work(void *argument) {
     while (TRUE) {
       /* Simulator processment */
       pthread_barrier_wait(&g_barrier);
-      printf("thread[%d]: on barrier!\n", id);
 
       /* Exit conditions */
       if (g_break) break;
 
       /* Cyclist processment */
-      /* printf("thread[%d]: old position = %d!\n", id, position); */
       position = speedway_advance_cyclist(g_speedway, id, position);
-      /* printf("thread[%d]: new position = %d!\n", id, position); */
-
-      if (position == 0 && g_step != 0) {
-        new_turn(id);
-      }
+      if (position == 0 && g_step != 0) new_turn(id);
 
       pthread_barrier_wait(&g_barrier);
     }
@@ -192,9 +185,8 @@ void simulate_race() {
   printf("\n=============================================================\n\n");
 
   do {
-
+    int to_remove = FALSE;
     g_break = FALSE;
-    g_to_remove = FALSE;
 
     while (TRUE) {
       /* Simulator processment */
@@ -210,16 +202,17 @@ void simulate_race() {
           g_missing = cyclists_remaining;
 
           g_removed_id = g_last[2];
-          g_to_remove = TRUE;
 
           sem_destroy(&g_deletion);
           sem_init(&g_deletion, 0, 0);
+
+          to_remove = TRUE;
         }
         g_break = TRUE;
       }
 
       g_step++;
-      printf(YELLOW "race control:" RES " step %d\n", g_step);
+      /* printf(YELLOW "race control:" RES " step %d\n", g_step); */
 
       pthread_barrier_wait(&g_barrier);
 
@@ -230,14 +223,10 @@ void simulate_race() {
       pthread_barrier_wait(&g_barrier);
     }
 
-    if (g_to_remove) {
-      unsigned int i = 0;
-      printf(YELLOW "race control:" RES " removing %d\n", g_removed_id);
+    if (to_remove) {
       pthread_array_remove(threads, g_removed_id);
       pthread_barrier_reset(&g_barrier, NULL, cyclists_remaining + 1);
-
-      g_to_remove = TRUE;
-      for (i = 0; i < cyclists_remaining; i++) sem_post(&g_deletion);
+      sem_mult_post(&g_deletion, cyclists_remaining);
     }
 
   } while (!g_end);
